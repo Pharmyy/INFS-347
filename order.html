@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Pizza</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header class="order-header">
+        <h1>Order Your Favorite Pizza</h1>
+        <a href="index.html"><button class="secondary-button">Back to Home</button></a>
+    </header>
+
+    <main>
+        <section class="pizza-list" id="pizzaGrid">
+            <!-- Pizza cards will be populated here by JavaScript -->
+        </section>
+
+        <aside class="order-summary">
+            <h2>Order Summary</h2>
+            <ul id="cart-items">
+                <li>No items in cart</li>
+            </ul>
+            <a href="checkout.html" id="checkoutLink" style="display:none;">
+                <button class="primary-button">Proceed to Checkout</button>
+            </a>
+        </aside>
+    </main>
+
+    <footer>
+        <p>&copy; 2024 Frozen Pizza Inc. All rights reserved.</p>
+    </footer>
+
+    <script>
+        // Array of pizzas available for order
+        const pizzas = [
+            { id: 1, name: 'Cheese Pizza', description: 'Classic cheese with mozzarella', price: 10, img: 'https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fwww.foodandwine.com%2Fthmb%2FWd4lBRZz3X_8qBr69UOu2m7I2iw%3D%2F1500x0%2Ffilters%3Ano_upscale()%3Amax_bytes(150000)%3Astrip_icc()%2Fclassic-cheese-pizza-FT-RECIPE0422-31a2c938fc2546c9a07b7011658cfd05.jpg&f=1&nofb=1&ipt=e22e4779ead9dfee8fb1d2a5a334d1b4070eb804cb0f655af58d0dc3fb8bb581&ipo=images' },
+            { id: 2, name: 'Pepperoni Pizza', description: 'Loaded with pepperoni slices', price: 12, img: 'https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fweb.didiglobal.com%2F_next%2Fimage%2F%3Furl%3Dhttps%3A%252F%252Fimages.ctfassets.net%252Fn7hs0hadu6ro%252F1O0Be1dObiQBm17GQJHLj8%252F3fde720730f0b3616ecf5a82b928e7f9%252Fpizza-a-domicilio-cerca-de-mi.jpg%26w%3D3840%26q%3D75&f=1&nofb=1&ipt=fef951a9f3efac8086b76c2016907c1423517daa26ff9d45d1b4c2e64d89ee5a&ipo=images' },
+            { id: 3, name: 'Veggie Pizza', description: 'Fresh veggies on a crispy crust', price: 11, img: 'https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Ftheperfectplace.co.za%2Fwp-content%2Fuploads%2FAshleys-Veggie-Supreme-Pizza-1-1.webp&f=1&nofb=1&ipt=7d81caa211171f7062396bb564185a55adee2c7ef5eeb5973b5fbdfc7d183c3b&ipo=images' }
+        ];
+
+        // Load the cart from localStorage
+        let cart = JSON.parse(localStorage.getItem('cart')) || [];
+
+        // Populate the pizza grid with pizza items
+        function populatePizzaGrid() {
+            const grid = document.getElementById('pizzaGrid');
+            grid.innerHTML = ''; // Clear grid content
+
+            pizzas.forEach(pizza => {
+                const pizzaCard = document.createElement('div');
+                pizzaCard.className = 'pizza-card';
+                pizzaCard.innerHTML = `
+                    <img src="${pizza.img}" alt="${pizza.name}">
+                    <h3>${pizza.name}</h3>
+                    <p>${pizza.description}</p>
+                    <p><strong>$${pizza.price}</strong></p>
+                    <button class="add-to-cart" onclick="addToCart(${pizza.id})">Add to Cart</button>
+                `;
+                grid.appendChild(pizzaCard);
+            });
+        }
+
+        // Function to add pizza to the cart
+        function addToCart(id) {
+            const pizza = pizzas.find(p => p.id === id);
+            if (pizza) {
+                cart.push(pizza);
+                localStorage.setItem('cart', JSON.stringify(cart)); // Save the updated cart to localStorage
+                updateCartStatus();
+            }
+        }
+
+        // Function to update the cart status
+        function updateCartStatus() {
+            const cartStatus = document.getElementById('cart-items');
+            const checkoutLink = document.getElementById('checkoutLink');
+            
+            // Clear the previous cart items
+            cartStatus.innerHTML = '';
+
+            if (cart.length === 0) {
+                cartStatus.innerHTML = '<li>No items in cart</li>';
+                checkoutLink.style.display = 'none';
+            } else {
+                cart.forEach(item => {
+                    const li = document.createElement('li');
+                    li.textContent = item.name;
+                    cartStatus.appendChild(li);
+                });
+                checkoutLink.style.display = 'inline-block'; // Show checkout button
+            }
+        }
+
+        // Initialize the page by populating the pizza grid and updating the cart status
+        document.addEventListener("DOMContentLoaded", function() {
+            populatePizzaGrid();
+            updateCartStatus();
+        });
+    </script>
+</body>
+</html>

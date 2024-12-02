@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkout</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+</head>
+<body>
+    <header>
+        <h1>Checkout</h1>
+    </header>
+    <div class="container">
+        <h2>Order Details</h2>
+        <div id="checkoutSummary">No items in cart</div>
+        <h2>Customer Information</h2>
+        <form id="checkoutForm">
+            <label for="name">Name:</label><br>
+            <input type="text" id="name" name="name" required><br><br>
+            <label for="E-mail">E-mail:</label><br>
+            <input type="text" id="E-mail" name="E-mail" required><br><br>
+            <label for="address">Address:</label><br>
+            <textarea id="address" name="address" required></textarea><br><br>
+            <label for="payment">Payment Method:</label><br>
+            <select id="payment" name="payment">
+                <option value="credit">Credit Card</option>
+                <option value="paypal">PayPal</option>
+            </select><br><br>
+            <button type="submit">Confirm Order</button>
+        </form>
+
+        <!-- QR Code Section -->
+        <div id="qrCodeContainer" style="display: none; text-align: center; margin-top: 20px;">
+            <h2>Your QR Code</h2>
+            <div id="qrCode"></div>
+            <p id="orderInfo"></p>
+        </div>
+    </div>
+    <footer>
+        <p>&copy; 2024 Zarko's Frozen Pizza Inc. All rights reserved.</p>
+    </footer>
+    <script>
+        // Function to generate a random string for confirmation and tracking numbers
+        function generateRandomString(length) {
+            const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+            let result = '';
+            for (let i = 0; i < length; i++) {
+                result += characters.charAt(Math.floor(Math.random() * characters.length));
+            }
+            return result;
+        }
+
+        // Function to update cart items dynamically
+        function updateCheckoutSummary() {
+            const cart = JSON.parse(localStorage.getItem('cart')) || [];
+            const checkoutSummary = document.getElementById('checkoutSummary');
+            if (cart.length === 0) {
+                checkoutSummary.textContent = 'No items in cart';
+            } else {
+                checkoutSummary.innerHTML = '';
+                const ul = document.createElement('ul');
+                cart.forEach(item => {
+                    const li = document.createElement('li');
+                    li.textContent = `${item.name} - $${item.price}`;
+                    ul.appendChild(li);
+                });
+                checkoutSummary.appendChild(ul);
+            }
+        }
+
+        // Generate QR Code and show order information on order confirmation
+        document.getElementById("checkoutForm").addEventListener("submit", function(event) {
+            event.preventDefault();
+
+            const name = document.getElementById("name").value;
+            const address = document.getElementById("address").value;
+            const cart = JSON.parse(localStorage.getItem('cart')) || [];
+
+            if (!name || !address || cart.length === 0) {
+                alert("Please complete all fields and ensure your cart is not empty.");
+                return;
+            }
+
+            const confirmationCode = generateRandomString(8);
+            const trackingNumber = generateRandomString(12);
+
+            alert(`Order Confirmed! Your Confirmation Code: ${confirmationCode}`);
+
+            // Generate QR Code with order details
+            const qrData = {
+                confirmationCode: confirmationCode,
+                trackingNumber: trackingNumber,
+                customerName: name,
+                address: address,
+                items: cart.map(item => `${item.name} - $${item.price}`),
+                total: cart.reduce((sum, item) => sum + item.price, 0)
+            };
+
+            const qrCodeContainer = document.getElementById("qrCodeContainer");
+            qrCodeContainer.style.display = "block"; // Show QR Code section
+
+            const qrCodeDiv = document.getElementById("qrCode");
+            qrCodeDiv.innerHTML = ""; // Clear previous QR Code if any
+
+            // Display order information
+            document.getElementById("orderInfo").textContent = 
+                `Confirmation Code: ${confirmationCode} | Tracking Number: ${trackingNumber}`;
+
+            // Create a canvas element for the QR Code
+            const canvas = document.createElement('canvas');
+            qrCodeDiv.appendChild(canvas);
+
+            // Generate QR Code
+            QRCode.toCanvas(canvas, JSON.stringify(qrData), {
+                width: 250,
+                margin: 2
+            }, function (error) {
+                if (error) {
+                    console.error(error);
+                    alert("Failed to generate QR Code. Please try again.");
+                } else {
+                    console.log("QR Code generated successfully.");
+                }
+            });
+        });
+
+        // Run updateCheckoutSummary on page load to display cart items
+        document.addEventListener('DOMContentLoaded', updateCheckoutSummary);
+    </script>
+</body>
+</html>
